@@ -15,7 +15,8 @@ Backend API for Emissor NF MEI — NestJS 11, TypeORM 1, PostgreSQL.
 | --- | --- | --- |
 | `auth` | `POST /api/auth/register`, `login`, `refresh` | Registro MEI por CNPJ, login JWT e refresh token |
 | `clients` | `GET /api/clients` | Cadastro de clientes (PF/PJ) |
-| `fiscal` | `GET /api/fiscal/*` | Dashboard, notas fiscais e obrigações DAS/DASN |
+| `fiscal` | `GET /api/fiscal/*` | Dashboard e obrigações DAS/DASN |
+| `nfe` | `GET /api/nfe/invoices` | Listagem de notas fiscais emitidas (NF-e) |
 | `notifications` | `GET /api/notifications` | Notificações in-app, push e lembretes DAS |
 
 Rotas de domínio exigem header `X-Company-ID` (tenant). Notificações usam `X-User-ID`.

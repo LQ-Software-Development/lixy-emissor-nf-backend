@@ -9,6 +9,7 @@ import { HealthModule } from './health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { FiscalModule } from './modules/fiscal/fiscal.module';
+import { NfeModule } from './modules/nfe/nfe.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
@@ -28,6 +29,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     AuthModule,
     ClientsModule,
     FiscalModule,
+    NfeModule,
     NotificationsModule,
   ],
   controllers: [AppController],
