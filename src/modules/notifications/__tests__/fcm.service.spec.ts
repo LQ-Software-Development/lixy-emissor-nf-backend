@@ -25,8 +25,9 @@ describe('FcmService', () => {
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn((key: string, defaultValue?: string) =>
-              config[key] ?? defaultValue,
+            get: jest.fn(
+              (key: string, defaultValue?: string) =>
+                config[key] ?? defaultValue,
             ),
           },
         },
@@ -47,9 +48,7 @@ describe('FcmService', () => {
   });
 
   it('initializes when credentials are present', async () => {
-    (getApps as jest.Mock)
-      .mockReturnValueOnce([])
-      .mockReturnValue([{}]);
+    (getApps as jest.Mock).mockReturnValueOnce([]).mockReturnValue([{}]);
 
     service = await createService({
       FIREBASE_PROJECT_ID: 'project',
