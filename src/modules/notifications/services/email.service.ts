@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
-import { Transporter } from 'nodemailer';
+import { Resend } from 'resend';
 
 export type EmailPayload = {
   to: string;
@@ -13,59 +12,50 @@ export type EmailPayload = {
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: Transporter | null = null;
+  private client: Resend | null = null;
 
   constructor(private readonly configService: ConfigService) {
     this.initialize();
   }
 
   private initialize(): void {
-    const host = this.configService.get<string>('SMTP_HOST');
-    const port = Number(this.configService.get<string>('SMTP_PORT', '587'));
-    const user = this.configService.get<string>('SMTP_USER');
-    const pass = this.configService.get<string>('SMTP_PASS');
+    const apiKey = this.configService.get<string>('RESEND_API_KEY');
 
-    if (!host || !user || !pass) {
+    if (!apiKey) {
       this.logger.warn(
-        'SMTP credentials not configured; email fallback disabled',
+        'RESEND_API_KEY not configured; email delivery disabled',
       );
       return;
     }
 
-    this.transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: { user, pass },
-    });
+    this.client = new Resend(apiKey);
   }
 
   isConfigured(): boolean {
-    return this.transporter !== null;
+    return this.client !== null;
   }
 
   async send(payload: EmailPayload): Promise<boolean> {
-    if (!this.transporter) {
-      this.logger.warn('SMTP not configured; skipping email delivery');
+    if (!this.client) {
+      this.logger.warn('Resend not configured; skipping email delivery');
       return false;
     }
 
     const from =
-      this.configService.get<string>('SMTP_FROM') ??
-      this.configService.get<string>('SMTP_USER');
+      this.configService.get<string>('RESEND_FROM') ?? 'onboarding@resend.dev';
 
-    if (!from) {
-      this.logger.warn('SMTP_FROM not configured; skipping email delivery');
-      return false;
-    }
-
-    await this.transporter.sendMail({
+    const { error } = await this.client.emails.send({
       from,
       to: payload.to,
       subject: payload.subject,
       html: payload.html,
       text: payload.text ?? payload.html.replace(/<[^>]+>/g, ''),
     });
+
+    if (error) {
+      this.logger.error(`Resend delivery failed: ${error.message}`);
+      return false;
+    }
 
     return true;
   }

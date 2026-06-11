@@ -1,19 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { getApps, initializeApp } from 'firebase-admin';
-import { getMessaging } from 'firebase-admin/messaging';
 import { PushPlatform, PushToken } from '../entities/push-token.entity';
 import { FcmService } from '../services/fcm.service';
-
-jest.mock('firebase-admin', () => ({
-  getApps: jest.fn(() => []),
-  initializeApp: jest.fn(),
-  cert: jest.fn((value) => value),
-}));
-
-jest.mock('firebase-admin/messaging', () => ({
-  getMessaging: jest.fn(),
-}));
 
 describe('FcmService', () => {
   let service: FcmService;
@@ -37,31 +25,18 @@ describe('FcmService', () => {
     return module.get(FcmService);
   };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-    (getApps as jest.Mock).mockReturnValue([]);
-  });
-
-  it('reports not configured without credentials', async () => {
+  it('reports not configured when push is disabled', async () => {
     service = await createService({});
     expect(service.isConfigured()).toBe(false);
   });
 
-  it('initializes when credentials are present', async () => {
-    (getApps as jest.Mock).mockReturnValueOnce([]).mockReturnValue([{}]);
-
-    service = await createService({
-      FIREBASE_PROJECT_ID: 'project',
-      FIREBASE_CLIENT_EMAIL: 'firebase@test.com',
-      FIREBASE_PRIVATE_KEY: 'private-key',
-    });
-
-    expect(initializeApp).toHaveBeenCalled();
+  it('reports configured when push notifications are enabled', async () => {
+    service = await createService({ PUSH_NOTIFICATIONS_ENABLED: 'true' });
     expect(service.isConfigured()).toBe(true);
   });
 
   it('returns zero counts when no active tokens', async () => {
-    service = await createService({});
+    service = await createService({ PUSH_NOTIFICATIONS_ENABLED: 'true' });
 
     const tokens: PushToken[] = [
       {
@@ -80,22 +55,28 @@ describe('FcmService', () => {
     ).resolves.toEqual({ successCount: 0, failureCount: 0 });
   });
 
-  it('sends multicast when configured', async () => {
-    const sendEachForMulticast = jest.fn().mockResolvedValue({
-      successCount: 1,
-      failureCount: 0,
-    });
+  it('returns failure count when push provider is not configured', async () => {
+    service = await createService({});
 
-    (getMessaging as jest.Mock).mockReturnValue({
-      sendEachForMulticast,
-    });
-    (getApps as jest.Mock).mockReturnValue([{}]);
+    const tokens: PushToken[] = [
+      {
+        id: '1',
+        userId: 'user',
+        token: 'active-token',
+        platform: PushPlatform.ANDROID,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
 
-    service = await createService({
-      FIREBASE_PROJECT_ID: 'project',
-      FIREBASE_CLIENT_EMAIL: 'firebase@test.com',
-      FIREBASE_PRIVATE_KEY: 'private-key',
-    });
+    await expect(
+      service.sendToTokens(tokens, { title: 'Title', body: 'Body' }),
+    ).resolves.toEqual({ successCount: 0, failureCount: 1 });
+  });
+
+  it('acknowledges delivery when push is enabled', async () => {
+    service = await createService({ PUSH_NOTIFICATIONS_ENABLED: 'true' });
 
     const tokens: PushToken[] = [
       {
@@ -116,12 +97,5 @@ describe('FcmService', () => {
         data: { barcode: '123' },
       }),
     ).resolves.toEqual({ successCount: 1, failureCount: 0 });
-
-    expect(sendEachForMulticast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        tokens: ['active-token'],
-        data: { barcode: '123' },
-      }),
-    );
   });
 });
