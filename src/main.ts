@@ -6,6 +6,10 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.setGlobalPrefix('api', {
+    exclude: ['/', 'health'],
+  });
+
   app.enableCors({
     origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -40,6 +44,8 @@ async function bootstrap() {
       },
       'X-Company-ID',
     )
+    .addTag('Health', 'Service and database health checks')
+    .addTag('Clients', 'Clientes — CRUD, CPF/CNPJ e CEP')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
