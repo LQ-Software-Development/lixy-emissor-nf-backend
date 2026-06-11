@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { buildTypeOrmOptions } from './database/typeorm.config';
 import { HealthModule } from './health/health.module';
 import { ClientsModule } from './modules/clients/clients.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ClientsModule } from './modules/clients/clients.module';
     }),
     HealthModule,
     ClientsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
 })
