@@ -1,13 +1,23 @@
 # lixy-emissor-nf-backend
 
-Backend API for **Emissor NF MEI** — NestJS 10 + TypeORM + PostgreSQL.
+Backend API for **Emissor NF MEI** — NestJS 11 + TypeORM + PostgreSQL 16.
 
 ## Stack
 
-- NestJS 10
-- TypeORM 0.3 + PostgreSQL
+- NestJS 11 (TypeScript strict mode)
+- TypeORM 0.3 + PostgreSQL 16
 - Swagger (`/docs`)
 - Health check (`/health`)
+
+## Módulos
+
+| Módulo | Rota | Descrição |
+| --- | --- | --- |
+| `nfe` | `GET /nfe/invoices` | Emissão de notas fiscais |
+| `fiscal` | `GET /fiscal/obligations` | Obrigações fiscais (DAS/DASN) |
+| `clients` | `GET /clients` | Cadastro de clientes |
+
+Todas as rotas de domínio exigem header `X-Company-ID` (tenant).
 
 ## Setup local
 
@@ -31,6 +41,8 @@ npm run start:dev
 - API: `http://localhost:3009`
 - Swagger: `http://localhost:3009/docs`
 - Health: `http://localhost:3009/health`
+
+`TYPEORM_SYNCHRONIZE=true` no `.env` habilita auto-sync de schema em dev.
 
 ## Migrations
 
