@@ -39,6 +39,7 @@ async function bootstrap(): Promise<void> {
     .addBearerAuth()
     .addTag('Health', 'Service and database health checks')
     .addTag('Clients', 'Client management (PF/PJ)')
+    .addTag('Notifications', 'Push notifications, in-app alerts and DAS reminders')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
