@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Invoice } from '../nfe/entities/invoice.entity';
 import { FiscalObligation } from './entities/fiscal-obligation.entity';
-import { Invoice } from './entities/invoice.entity';
 import { FiscalCronService } from './fiscal-cron.service';
 import { FiscalController } from './fiscal.controller';
 import { FiscalService } from './fiscal.service';

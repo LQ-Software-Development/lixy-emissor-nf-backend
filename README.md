@@ -6,6 +6,7 @@ Backend API for Emissor NF MEI — NestJS 11, TypeORM 1, PostgreSQL.
 
 - NestJS 11 (TypeScript strict mode)
 - TypeORM 1.x + PostgreSQL 16
+- Resend (email) + pdfkit (PDF de notas)
 - Swagger at `/docs`
 - GitHub Actions CI (lint, typecheck, test, build, e2e)
 
@@ -14,9 +15,10 @@ Backend API for Emissor NF MEI — NestJS 11, TypeORM 1, PostgreSQL.
 | Módulo | Rota | Descrição |
 | --- | --- | --- |
 | `auth` | `POST /api/auth/register`, `login`, `refresh` | Registro MEI por CNPJ, login JWT e refresh token |
+| `nfe` | `POST/GET/PATCH /api/nfe/*` | Emissão, listagem, cancelamento e PDF de NFS-e MEI |
 | `clients` | `GET /api/clients` | Cadastro de clientes (PF/PJ) |
-| `fiscal` | `GET /api/fiscal/*` | Dashboard, notas fiscais e obrigações DAS/DASN |
-| `notifications` | `GET /api/notifications` | Notificações in-app, push e lembretes DAS |
+| `fiscal` | `GET /api/fiscal/*` | Dashboard e obrigações DAS/DASN |
+| `notifications` | `GET /api/notifications` | Notificações in-app e lembretes DAS (email via Resend) |
 
 Rotas de domínio exigem JWT Bearer (`Authorization`) após login/registro.
 Auth standalone MEI (não integrado ao `non-saas-auth-service` da plataforma Lixy).
@@ -60,6 +62,8 @@ See `.env.example`:
 - `TYPEORM_MIGRATIONS_RUN` — run pending migrations on boot (recommended in production)
 - `JWT_SECRET` — access token signing (required for auth)
 - `JWT_REFRESH_SECRET` — optional; defaults to `{JWT_SECRET}-refresh`
+- `RESEND_API_KEY` — Resend API key for email notifications
+- `RESEND_FROM` — sender address for Resend (e.g. `noreply@seudominio.com`)
 
 ## Docker
 

@@ -27,7 +27,6 @@ describe('DasReminderJob', () => {
     dasReminderService.processReminders.mockResolvedValue({
       processed: 2,
       notificationsCreated: 2,
-      pushSent: 1,
       emailsSent: 1,
     });
 

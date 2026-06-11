@@ -9,7 +9,7 @@ import {
   ObligationStatus,
   ObligationType,
 } from './entities/fiscal-obligation.entity';
-import { Invoice } from './entities/invoice.entity';
+import { Invoice, InvoiceStatus } from '../nfe/entities/invoice.entity';
 
 @Injectable()
 export class FiscalService {
@@ -93,7 +93,8 @@ export class FiscalService {
     const result = await this.invoicesRepository
       .createQueryBuilder('invoice')
       .select('COALESCE(SUM(invoice.amount), 0)', 'total')
-      .where('invoice.issuedAt >= :from', { from })
+      .where('invoice.status = :status', { status: InvoiceStatus.ISSUED })
+      .andWhere('invoice.issuedAt >= :from', { from })
       .andWhere('invoice.issuedAt <= :to', { to })
       .getRawOne<{ total: string }>();
 

@@ -10,7 +10,6 @@ import { Notification } from './entities/notification.entity';
 import { PushToken } from './entities/push-token.entity';
 import { DasReminderService } from './services/das-reminder.service';
 import { EmailService } from './services/email.service';
-import { FcmService } from './services/fcm.service';
 
 @Module({
   imports: [
@@ -21,7 +20,6 @@ import { FcmService } from './services/fcm.service';
   controllers: [NotificationsController],
   providers: [
     NotificationsService,
-    FcmService,
     EmailService,
     DasReminderService,
     DasReminderJob,

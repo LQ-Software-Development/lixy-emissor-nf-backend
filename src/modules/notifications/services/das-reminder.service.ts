@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { User } from '../../auth/entities/user.entity';
 import {
   FiscalObligation,
   ObligationStatus,
@@ -10,15 +11,12 @@ import {
   NotificationCategory,
   NotificationType,
 } from '../entities/notification.entity';
-import { User } from '../../auth/entities/user.entity';
 import { NotificationsService } from '../notifications.service';
 import { EmailService } from './email.service';
-import { FcmService } from './fcm.service';
 
 export type DasReminderResult = {
   processed: number;
   notificationsCreated: number;
-  pushSent: number;
   emailsSent: number;
 };
 
@@ -33,7 +31,6 @@ export class DasReminderService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly notificationsService: NotificationsService,
-    private readonly fcmService: FcmService,
     private readonly emailService: EmailService,
   ) {}
 
@@ -60,7 +57,6 @@ export class DasReminderService {
     const result: DasReminderResult = {
       processed: obligations.length,
       notificationsCreated: 0,
-      pushSent: 0,
       emailsSent: 0,
     };
 
@@ -96,7 +92,7 @@ export class DasReminderService {
         barcode,
       };
 
-      const notification = await this.notificationsService.create({
+      await this.notificationsService.create({
         userId: user.id,
         title,
         body,
@@ -107,34 +103,14 @@ export class DasReminderService {
 
       result.notificationsCreated += 1;
 
-      const pushTokens = await this.notificationsService.getActivePushTokens(
-        user.id,
-      );
-
-      const pushResult = await this.fcmService.sendToTokens(pushTokens, {
-        title,
-        body,
-        data: {
-          notificationId: notification.id,
-          type: NotificationType.DAS_REMINDER,
-          barcode,
-          dueDate: dueDateLabel,
-          amount: obligation.amount,
-        },
+      const emailSent = await this.emailService.send({
+        to: user.email,
+        subject: title,
+        html: `<p>${body}</p><p><strong>Código de barras:</strong> ${barcode || 'N/A'}</p>`,
       });
 
-      result.pushSent += pushResult.successCount;
-
-      if (pushResult.successCount === 0) {
-        const emailSent = await this.emailService.send({
-          to: user.email,
-          subject: title,
-          html: `<p>${body}</p><p><strong>Código de barras:</strong> ${barcode || 'N/A'}</p>`,
-        });
-
-        if (emailSent) {
-          result.emailsSent += 1;
-        }
+      if (emailSent) {
+        result.emailsSent += 1;
       }
     }
 

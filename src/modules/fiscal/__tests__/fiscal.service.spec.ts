@@ -8,7 +8,7 @@ import {
   ObligationStatus,
   ObligationType,
 } from '../entities/fiscal-obligation.entity';
-import { Invoice } from '../entities/invoice.entity';
+import { Invoice } from '../../nfe/entities/invoice.entity';
 import { FiscalService } from '../fiscal.service';
 
 const mockObligation = (

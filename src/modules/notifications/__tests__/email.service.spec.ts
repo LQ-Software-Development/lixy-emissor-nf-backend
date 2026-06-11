@@ -1,92 +1,93 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
 import { EmailService } from '../services/email.service';
 
-jest.mock('nodemailer', () => ({
-  createTransport: jest.fn(),
+const sendMock = jest.fn();
+
+jest.mock('resend', () => ({
+  Resend: jest.fn().mockImplementation(() => ({
+    emails: { send: sendMock },
+  })),
 }));
 
 describe('EmailService', () => {
   let service: EmailService;
-  const sendMail = jest.fn();
 
-  const createService = async (config: Record<string, string | undefined>) => {
-    const module: TestingModule = await Test.createTestingModule({
+  const createService = (config: Record<string, string | undefined>) => {
+    return Test.createTestingModule({
       providers: [
         EmailService,
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn(
-              (key: string, defaultValue?: string) =>
-                config[key] ?? defaultValue,
-            ),
+            get: (key: string) => config[key],
           },
         },
       ],
     }).compile();
-
-    return module.get(EmailService);
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (nodemailer.createTransport as jest.Mock).mockReturnValue({ sendMail });
+    sendMock.mockResolvedValue({ data: { id: 'email-id' }, error: null });
   });
 
-  it('reports not configured without SMTP credentials', async () => {
-    service = await createService({});
+  it('reports not configured when RESEND_API_KEY is missing', async () => {
+    const module = await createService({});
+    service = module.get(EmailService);
+
     expect(service.isConfigured()).toBe(false);
-  });
-
-  it('initializes transporter with SMTP credentials', async () => {
-    service = await createService({
-      SMTP_HOST: 'smtp.test.com',
-      SMTP_PORT: '587',
-      SMTP_USER: 'user@test.com',
-      SMTP_PASS: 'secret',
-      SMTP_FROM: 'noreply@test.com',
-    });
-
-    expect(nodemailer.createTransport).toHaveBeenCalled();
-    expect(service.isConfigured()).toBe(true);
-  });
-
-  it('sends email when configured', async () => {
-    sendMail.mockResolvedValue({ messageId: '1' });
-
-    service = await createService({
-      SMTP_HOST: 'smtp.test.com',
-      SMTP_PORT: '587',
-      SMTP_USER: 'user@test.com',
-      SMTP_PASS: 'secret',
-      SMTP_FROM: 'noreply@test.com',
-    });
-
     await expect(
       service.send({
-        to: 'recipient@test.com',
-        subject: 'Subject',
+        to: 'user@test.com',
+        subject: 'Test',
         html: '<p>Hello</p>',
       }),
-    ).resolves.toBe(true);
-
-    expect(sendMail).toHaveBeenCalledWith(
-      expect.objectContaining({
-        to: 'recipient@test.com',
-        subject: 'Subject',
-      }),
-    );
+    ).resolves.toBe(false);
+    expect(sendMock).not.toHaveBeenCalled();
   });
 
-  it('returns false when SMTP is not configured', async () => {
-    service = await createService({});
+  it('sends email via Resend when configured', async () => {
+    const module = await createService({
+      RESEND_API_KEY: 're_test_key',
+      RESEND_FROM: 'noreply@test.com',
+    });
+    service = module.get(EmailService);
+
+    expect(service.isConfigured()).toBe(true);
+
+    const sent = await service.send({
+      to: 'user@test.com',
+      subject: 'Test',
+      html: '<p>Hello</p>',
+    });
+
+    expect(sent).toBe(true);
+    expect(sendMock).toHaveBeenCalledWith({
+      from: 'noreply@test.com',
+      to: 'user@test.com',
+      subject: 'Test',
+      html: '<p>Hello</p>',
+      text: 'Hello',
+    });
+  });
+
+  it('returns false when Resend reports an error', async () => {
+    sendMock.mockResolvedValue({
+      data: null,
+      error: { message: 'delivery failed' },
+    });
+
+    const module = await createService({
+      RESEND_API_KEY: 're_test_key',
+      RESEND_FROM: 'noreply@test.com',
+    });
+    service = module.get(EmailService);
 
     await expect(
       service.send({
-        to: 'recipient@test.com',
-        subject: 'Subject',
+        to: 'user@test.com',
+        subject: 'Test',
         html: '<p>Hello</p>',
       }),
     ).resolves.toBe(false);

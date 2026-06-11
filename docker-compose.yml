@@ -10,14 +10,8 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret-key}
       TYPEORM_SYNCHRONIZE: ${TYPEORM_SYNCHRONIZE:-true}
       TYPEORM_MIGRATIONS_RUN: ${TYPEORM_MIGRATIONS_RUN:-false}
-      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
-      FIREBASE_CLIENT_EMAIL: ${FIREBASE_CLIENT_EMAIL:-}
-      FIREBASE_PRIVATE_KEY: ${FIREBASE_PRIVATE_KEY:-}
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASS: ${SMTP_PASS:-}
-      SMTP_FROM: ${SMTP_FROM:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: ${RESEND_FROM:-}
     depends_on:
       postgres:
         condition: service_healthy
