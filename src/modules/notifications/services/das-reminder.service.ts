@@ -10,7 +10,7 @@ import {
   NotificationCategory,
   NotificationType,
 } from '../entities/notification.entity';
-import { UserRef } from '../entities/user-ref.entity';
+import { User } from '../../auth/entities/user.entity';
 import { NotificationsService } from '../notifications.service';
 import { EmailService } from './email.service';
 import { FcmService } from './fcm.service';
@@ -30,8 +30,8 @@ export class DasReminderService {
   constructor(
     @InjectRepository(FiscalObligation)
     private readonly obligationRepository: Repository<FiscalObligation>,
-    @InjectRepository(UserRef)
-    private readonly userRepository: Repository<UserRef>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly notificationsService: NotificationsService,
     private readonly fcmService: FcmService,
     private readonly emailService: EmailService,
