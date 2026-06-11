@@ -1,6 +1,9 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
+import { JwtAuthGuard } from '../src/modules/auth/guards/jwt-auth.guard';
 import {
   NotificationCategory,
   NotificationStatus,
@@ -12,7 +15,9 @@ import { NotificationsService } from '../src/modules/notifications/notifications
 
 describe('Notifications (e2e)', () => {
   let app: INestApplication;
+  let jwtService: JwtService;
   const userId = 'c3eebc99-9c0b-4ef8-bb6d-6bb9bd380a33';
+  const jwtSecret = 'test-secret';
 
   const notificationsServiceMock = {
     findAll: jest.fn(),
@@ -20,10 +25,25 @@ describe('Notifications (e2e)', () => {
     registerPushToken: jest.fn(),
   };
 
+  const signAccessToken = (): Promise<string> =>
+    jwtService.signAsync({
+      sub: userId,
+      cnpj: '12345678000190',
+      type: 'access',
+    });
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [
+        ConfigModule.forRoot({
+          isGlobal: true,
+          load: [() => ({ JWT_SECRET: jwtSecret })],
+        }),
+        JwtModule.register({ secret: jwtSecret }),
+      ],
       controllers: [NotificationsController],
       providers: [
+        JwtAuthGuard,
         {
           provide: NotificationsService,
           useValue: notificationsServiceMock,
@@ -32,7 +52,9 @@ describe('Notifications (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    jwtService = moduleFixture.get(JwtService);
     app.setGlobalPrefix('api');
+    app.useGlobalGuards(app.get(JwtAuthGuard));
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -75,10 +97,11 @@ describe('Notifications (e2e)', () => {
     };
 
     notificationsServiceMock.findAll.mockResolvedValue(payload);
+    const token = await signAccessToken();
 
     await request(app.getHttpServer())
       .get('/api/notifications')
-      .set('X-User-ID', userId)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200)
       .expect(payload);
   });
@@ -100,10 +123,11 @@ describe('Notifications (e2e)', () => {
     };
 
     notificationsServiceMock.markAsRead.mockResolvedValue(notification);
+    const token = await signAccessToken();
 
     await request(app.getHttpServer())
       .patch(`/api/notifications/${notificationId}/read`)
-      .set('X-User-ID', userId)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200)
       .expect(notification);
   });
@@ -120,10 +144,11 @@ describe('Notifications (e2e)', () => {
     };
 
     notificationsServiceMock.registerPushToken.mockResolvedValue(pushToken);
+    const token = await signAccessToken();
 
     await request(app.getHttpServer())
       .post('/api/notifications/register-push')
-      .set('X-User-ID', userId)
+      .set('Authorization', `Bearer ${token}`)
       .send({
         token: 'fcm-token',
         platform: PushPlatform.ANDROID,
@@ -132,7 +157,7 @@ describe('Notifications (e2e)', () => {
       .expect(pushToken);
   });
 
-  it('rejects requests without X-User-ID header', async () => {
+  it('rejects requests without Authorization header', async () => {
     await request(app.getHttpServer()).get('/api/notifications').expect(401);
   });
 });

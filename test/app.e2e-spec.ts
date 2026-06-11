@@ -22,6 +22,7 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api', { exclude: ['', 'health'] });
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,

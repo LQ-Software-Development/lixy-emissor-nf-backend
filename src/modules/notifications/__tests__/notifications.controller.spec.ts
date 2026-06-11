@@ -1,4 +1,3 @@
-import { UnauthorizedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   Notification,
@@ -60,10 +59,6 @@ describe('NotificationsController', () => {
 
     await expect(controller.findAll(userId, {})).resolves.toEqual(paginated);
     expect(service.findAll).toHaveBeenCalledWith(userId, {});
-  });
-
-  it('rejects listing without user header', () => {
-    expect(() => controller.findAll('', {})).toThrow(UnauthorizedException);
   });
 
   it('marks notification as read', async () => {

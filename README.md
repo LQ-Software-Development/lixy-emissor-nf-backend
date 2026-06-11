@@ -18,8 +18,8 @@ Backend API for Emissor NF MEI — NestJS 11, TypeORM 1, PostgreSQL.
 | `fiscal` | `GET /api/fiscal/*` | Dashboard, notas fiscais e obrigações DAS/DASN |
 | `notifications` | `GET /api/notifications` | Notificações in-app, push e lembretes DAS |
 
-Rotas de domínio exigem header `X-Company-ID` (tenant). Notificações usam `X-User-ID`.
-Auth usa JWT Bearer (`Authorization`) após login.
+Rotas de domínio exigem JWT Bearer (`Authorization`) após login/registro.
+Auth standalone MEI (não integrado ao `non-saas-auth-service` da plataforma Lixy).
 
 ## Quick start
 
@@ -56,8 +56,8 @@ See `.env.example`:
 
 - `DATABASE_URL` — PostgreSQL connection string (required)
 - `API_PORT` — HTTP port (default `3009`)
-- `TYPEORM_SYNCHRONIZE` — `true` for local dev schema sync
-- `TYPEORM_MIGRATIONS_RUN` — run pending migrations on boot
+- `TYPEORM_SYNCHRONIZE` — `true` for local dev schema sync; use `false` in production
+- `TYPEORM_MIGRATIONS_RUN` — run pending migrations on boot (recommended in production)
 - `JWT_SECRET` — access token signing (required for auth)
 - `JWT_REFRESH_SECRET` — optional; defaults to `{JWT_SECRET}-refresh`
 

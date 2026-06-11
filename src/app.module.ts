@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { ClientsModule } from './modules/clients/clients.module';
 import { FiscalModule } from './modules/fiscal/fiscal.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -35,6 +36,10 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
     },
   ],
 })

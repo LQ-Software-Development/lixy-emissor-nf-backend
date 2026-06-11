@@ -11,7 +11,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { QueryClientsDto } from './dto/query-clients.dto';
@@ -20,6 +20,7 @@ import { Client } from './entities/client.entity';
 import { CepResponse } from './interfaces/cep-response.interface';
 
 @ApiTags('Clients')
+@ApiBearerAuth()
 @Controller('clients')
 export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}

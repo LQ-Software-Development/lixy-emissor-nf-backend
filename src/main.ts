@@ -6,19 +6,13 @@ import { AppModule } from './app.module';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', { exclude: ['', 'health'] });
 
   app.enableCors({
     origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'X-Company-ID',
-      'X-User-ID',
-      'Accept',
-    ],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
   app.useGlobalPipes(
@@ -33,15 +27,6 @@ async function bootstrap(): Promise<void> {
     .setTitle('Lixy Emissor NF API')
     .setDescription('Backend API for Emissor NF MEI')
     .setVersion('1.0')
-    .addApiKey(
-      {
-        type: 'apiKey',
-        name: 'X-Company-ID',
-        in: 'header',
-        description: 'Organization / tenant ID',
-      },
-      'X-Company-ID',
-    )
     .addBearerAuth()
     .addTag('Auth', 'MEI registration, login and token refresh')
     .addTag('Health', 'Service and database health checks')
