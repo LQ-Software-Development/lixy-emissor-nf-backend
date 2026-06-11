@@ -47,6 +47,7 @@ async function bootstrap(): Promise<void> {
     .addTag('Health', 'Service and database health checks')
     .addTag('Clients', 'Client management (PF/PJ)')
     .addTag('Fiscal', 'Fiscal dashboard and obligations (DAS/DASN)')
+    .addTag('NFe', 'NF-e invoice listing and emission')
     .addTag(
       'Notifications',
       'Push notifications, in-app alerts and DAS reminders',
