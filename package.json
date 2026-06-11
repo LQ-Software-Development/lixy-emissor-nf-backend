@@ -38,9 +38,9 @@
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
-    "firebase-admin": "^14.0.0",
-    "nodemailer": "^8.0.11",
+    "pdfkit": "^0.17.1",
     "pg": "^8.11.5",
+    "resend": "^4.5.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "typeorm": "^1.0.0"
@@ -53,7 +53,7 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
-    "@types/nodemailer": "^8.0.1",
+    "@types/pdfkit": "^0.13.9",
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
@@ -94,7 +94,10 @@
       "!modules/fiscal/**/__tests__/**",
       "modules/notifications/**/*.(t|j)s",
       "!modules/notifications/**/*.spec.ts",
-      "!modules/notifications/**/__tests__/**"
+      "!modules/notifications/**/__tests__/**",
+      "modules/nfe/**/*.(t|j)s",
+      "!modules/nfe/**/*.spec.ts",
+      "!modules/nfe/**/__tests__/**"
     ],
     "coverageThreshold": {
       "global": {
