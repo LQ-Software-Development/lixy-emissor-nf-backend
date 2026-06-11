@@ -38,9 +38,13 @@ async function bootstrap(): Promise<void> {
     )
     .addBearerAuth()
     .addTag('Health', 'Service and database health checks')
+    .addTag('Auth', 'MEI registration, login and token refresh')
     .addTag('Clients', 'Client management (PF/PJ)')
     .addTag('Fiscal', 'Fiscal dashboard and obligations (DAS/DASN)')
-    .addTag('Notifications', 'Push notifications, in-app alerts and DAS reminders')
+    .addTag(
+      'Notifications',
+      'Push notifications, in-app alerts and DAS reminders',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

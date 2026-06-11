@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateNotificationsTable1749660000000
-  implements MigrationInterface
-{
+export class CreateNotificationsTable1749660000000 implements MigrationInterface {
   name = 'CreateNotificationsTable1749660000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -48,7 +46,9 @@ export class CreateNotificationsTable1749660000000
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "public"."IDX_notifications_deletedAt"`);
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_notifications_deletedAt"`,
+    );
     await queryRunner.query(
       `DROP INDEX "public"."IDX_notifications_userId_category"`,
     );

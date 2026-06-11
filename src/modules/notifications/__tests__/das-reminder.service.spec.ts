@@ -12,11 +12,23 @@ import {
   NotificationType,
 } from '../entities/notification.entity';
 import { PushPlatform } from '../entities/push-token.entity';
-import { UserRef } from '../entities/user-ref.entity';
+import { User } from '../../auth/entities/user.entity';
 import { NotificationsService } from '../notifications.service';
 import { DasReminderService } from '../services/das-reminder.service';
 import { EmailService } from '../services/email.service';
 import { FcmService } from '../services/fcm.service';
+
+const mockUser = (overrides: Partial<User> = {}): User => ({
+  id: 'user-1',
+  cnpj: '12345678000195',
+  email: 'user@test.com',
+  razaoSocial: 'Test MEI',
+  passwordHash: 'hash',
+  refreshTokenHash: null,
+  createdAt: new Date('2026-01-01'),
+  updatedAt: new Date('2026-01-01'),
+  ...overrides,
+});
 
 const mockObligation = (
   overrides: Partial<FiscalObligation> = {},
@@ -38,7 +50,7 @@ const mockObligation = (
 describe('DasReminderService', () => {
   let service: DasReminderService;
   let obligationRepository: jest.Mocked<Repository<FiscalObligation>>;
-  let userRepository: jest.Mocked<Repository<UserRef>>;
+  let userRepository: jest.Mocked<Repository<User>>;
   let notificationsService: jest.Mocked<NotificationsService>;
   let fcmService: jest.Mocked<FcmService>;
   let emailService: jest.Mocked<EmailService>;
@@ -67,7 +79,7 @@ describe('DasReminderService', () => {
           },
         },
         {
-          provide: getRepositoryToken(UserRef),
+          provide: getRepositoryToken(User),
           useValue: { findOne: jest.fn() },
         },
         {
@@ -90,7 +102,7 @@ describe('DasReminderService', () => {
 
     service = module.get(DasReminderService);
     obligationRepository = module.get(getRepositoryToken(FiscalObligation));
-    userRepository = module.get(getRepositoryToken(UserRef));
+    userRepository = module.get(getRepositoryToken(User));
     notificationsService = module.get(NotificationsService);
     fcmService = module.get(FcmService);
     emailService = module.get(EmailService);
@@ -106,10 +118,7 @@ describe('DasReminderService', () => {
     const obligation = mockObligation({ companyId: userId });
 
     obligationQueryBuilder.getMany.mockResolvedValue([obligation]);
-    userRepository.findOne.mockResolvedValue({
-      id: userId,
-      email: 'user@test.com',
-    });
+    userRepository.findOne.mockResolvedValue(mockUser({ id: userId }));
     notificationsService.create.mockResolvedValue({
       id: 'notification-1',
       userId,
@@ -174,10 +183,7 @@ describe('DasReminderService', () => {
     const obligation = mockObligation({ companyId: userId });
 
     obligationQueryBuilder.getMany.mockResolvedValue([obligation]);
-    userRepository.findOne.mockResolvedValue({
-      id: userId,
-      email: 'user@test.com',
-    });
+    userRepository.findOne.mockResolvedValue(mockUser({ id: userId }));
     notificationsService.create.mockResolvedValue({
       id: 'notification-1',
       userId,
