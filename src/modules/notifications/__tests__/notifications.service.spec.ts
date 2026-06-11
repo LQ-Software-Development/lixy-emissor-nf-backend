@@ -114,7 +114,10 @@ describe('NotificationsService', () => {
       status: NotificationStatus.READ,
     });
 
-    const result = await service.markAsRead(notification.userId, notification.id);
+    const result = await service.markAsRead(
+      notification.userId,
+      notification.id,
+    );
 
     expect(result.status).toBe(NotificationStatus.READ);
   });
@@ -192,6 +195,8 @@ describe('NotificationsService', () => {
 
     pushTokensRepository.find.mockResolvedValue(tokens);
 
-    await expect(service.getActivePushTokens('user-id')).resolves.toEqual(tokens);
+    await expect(service.getActivePushTokens('user-id')).resolves.toEqual(
+      tokens,
+    );
   });
 });
