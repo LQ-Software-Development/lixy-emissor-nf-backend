@@ -4,6 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+// pdfkit ships CJS-only; require keeps compatibility without esModuleInterop
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 import PDFDocument = require('pdfkit');
 import { Repository } from 'typeorm';
 import { Client } from '../clients/entities/client.entity';
