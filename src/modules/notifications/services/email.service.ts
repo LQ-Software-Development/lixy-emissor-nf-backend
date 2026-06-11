@@ -26,7 +26,9 @@ export class EmailService {
     const pass = this.configService.get<string>('SMTP_PASS');
 
     if (!host || !user || !pass) {
-      this.logger.warn('SMTP credentials not configured; email fallback disabled');
+      this.logger.warn(
+        'SMTP credentials not configured; email fallback disabled',
+      );
       return;
     }
 
