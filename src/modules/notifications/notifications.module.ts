@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { FiscalModule } from '../fiscal/fiscal.module';
 import { DasReminderJob } from './jobs/das-reminder.job';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
-import { FiscalObligationRef } from './entities/fiscal-obligation-ref.entity';
 import { Notification } from './entities/notification.entity';
 import { PushToken } from './entities/push-token.entity';
 import { UserRef } from './entities/user-ref.entity';
@@ -13,12 +13,8 @@ import { FcmService } from './services/fcm.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      Notification,
-      PushToken,
-      FiscalObligationRef,
-      UserRef,
-    ]),
+    FiscalModule,
+    TypeOrmModule.forFeature([Notification, PushToken, UserRef]),
   ],
   controllers: [NotificationsController],
   providers: [
