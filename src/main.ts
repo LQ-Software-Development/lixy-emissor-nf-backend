@@ -6,6 +6,10 @@ import { AppModule } from './app.module';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
+  app.setGlobalPrefix('api', {
+    exclude: ['/', 'health'],
+  });
+
   app.enableCors({
     origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -41,6 +45,7 @@ async function bootstrap(): Promise<void> {
     )
     .addBearerAuth()
     .addTag('Health', 'Service and database health checks')
+    .addTag('Auth', 'Register, login and JWT refresh')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

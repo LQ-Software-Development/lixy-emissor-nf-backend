@@ -58,3 +58,20 @@ API: `http://localhost:3009` — Postgres exposed on host port `5433`.
 
 - `GET /` — service metadata
 - `GET /health` — database connectivity check
+
+## Auth (`/api/auth`)
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `POST` | `/api/auth/register` | Register MEI user (unique CNPJ, bcrypt password) |
+| `POST` | `/api/auth/login` | Login with CNPJ + password |
+| `POST` | `/api/auth/refresh` | Renew access token (15 min) using refresh token (7 days) |
+
+Rate limit: **100 requests/minute** per IP (global throttler).
+
+JWT:
+
+- `JWT_SECRET` — access token signing key
+- `JWT_REFRESH_SECRET` — refresh token signing key (optional; defaults to `JWT_SECRET-refresh`)
+
+Swagger docs: `http://localhost:3009/docs`
