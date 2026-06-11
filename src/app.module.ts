@@ -1,23 +1,21 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
-import { buildTypeOrmOptions } from './database/typeorm.config';
+import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { ClientsModule } from './modules/clients/clients.module';
+import { FiscalModule } from './modules/fiscal/fiscal.module';
+import { NfeModule } from './modules/nfe/nfe.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) =>
-        buildTypeOrmOptions(configService),
-    }),
+    DatabaseModule,
     HealthModule,
+    NfeModule,
+    FiscalModule,
     ClientsModule,
   ],
   controllers: [AppController],

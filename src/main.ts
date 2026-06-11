@@ -38,6 +38,8 @@ async function bootstrap(): Promise<void> {
     )
     .addBearerAuth()
     .addTag('Health', 'Service and database health checks')
+    .addTag('NFe', 'Notas fiscais eletrônicas')
+    .addTag('Fiscal', 'Obrigações fiscais MEI (DAS/DASN)')
     .addTag('Clients', 'Client management (PF/PJ)')
     .build();
 

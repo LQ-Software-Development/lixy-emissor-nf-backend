@@ -1,10 +1,11 @@
 # lixy-emissor-nf-backend
 
-Backend API for Emissor NF MEI — NestJS 10, TypeORM, PostgreSQL.
+Backend API for Emissor NF MEI — NestJS 11, TypeORM, PostgreSQL.
 
 ## Stack
 
-- NestJS 10
+- NestJS 11
+- @nestjs/typeorm 11
 - TypeORM 0.3
 - PostgreSQL 16
 - Swagger at `/docs`
