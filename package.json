@@ -81,6 +81,9 @@
       "modules/clients/**/*.(t|j)s",
       "!modules/clients/**/*.spec.ts",
       "!modules/clients/**/__tests__/**",
+      "modules/fiscal/**/*.(t|j)s",
+      "!modules/fiscal/**/*.spec.ts",
+      "!modules/fiscal/**/__tests__/**",
       "modules/notifications/**/*.(t|j)s",
       "!modules/notifications/**/*.spec.ts",
       "!modules/notifications/**/__tests__/**"

@@ -2,10 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
-  FiscalObligationRef,
-  FiscalObligationStatus,
-  FiscalObligationType,
-} from '../entities/fiscal-obligation-ref.entity';
+  FiscalObligation,
+  ObligationStatus,
+  ObligationType,
+} from '../../fiscal/entities/fiscal-obligation.entity';
 import {
   NotificationCategory,
   NotificationType,
@@ -28,8 +28,8 @@ export class DasReminderService {
   private readonly reminderDays = 3;
 
   constructor(
-    @InjectRepository(FiscalObligationRef)
-    private readonly obligationRepository: Repository<FiscalObligationRef>,
+    @InjectRepository(FiscalObligation)
+    private readonly obligationRepository: Repository<FiscalObligation>,
     @InjectRepository(UserRef)
     private readonly userRepository: Repository<UserRef>,
     private readonly notificationsService: NotificationsService,
@@ -43,16 +43,19 @@ export class DasReminderService {
     return target.toISOString().slice(0, 10);
   }
 
-  async processReminders(referenceDate: Date = new Date()): Promise<DasReminderResult> {
+  async processReminders(
+    referenceDate: Date = new Date(),
+  ): Promise<DasReminderResult> {
     const dueDate = this.getTargetDueDate(referenceDate);
 
-    const obligations = await this.obligationRepository.find({
-      where: {
-        type: FiscalObligationType.DAS,
-        status: FiscalObligationStatus.PENDING,
-        dueDate,
-      },
-    });
+    const obligations = await this.obligationRepository
+      .createQueryBuilder('obligation')
+      .where('obligation.type = :type', { type: ObligationType.DAS })
+      .andWhere('obligation.status = :status', {
+        status: ObligationStatus.PENDING,
+      })
+      .andWhere('DATE(obligation.dueDate) = :dueDate', { dueDate })
+      .getMany();
 
     const result: DasReminderResult = {
       processed: obligations.length,
@@ -62,6 +65,13 @@ export class DasReminderService {
     };
 
     for (const obligation of obligations) {
+      if (!obligation.companyId) {
+        this.logger.warn(
+          `Obrigação DAS ${obligation.id} sem companyId vinculado`,
+        );
+        continue;
+      }
+
       const user = await this.userRepository.findOne({
         where: { id: obligation.companyId },
       });
@@ -73,14 +83,15 @@ export class DasReminderService {
         continue;
       }
 
+      const dueDateLabel = obligation.dueDate.toISOString().slice(0, 10);
       const barcode = obligation.barcode ?? '';
       const title = 'Lembrete de vencimento do DAS';
-      const body = `Seu DAS referente a ${obligation.referencePeriod} vence em ${this.reminderDays} dias (${dueDate}). Valor: R$ ${obligation.amount}.`;
+      const body = `Seu DAS referente a ${obligation.referencePeriod} vence em ${this.reminderDays} dias (${dueDateLabel}). Valor: R$ ${obligation.amount}.`;
 
       const metadata = {
         obligationId: obligation.id,
         referencePeriod: obligation.referencePeriod,
-        dueDate: obligation.dueDate,
+        dueDate: dueDateLabel,
         amount: obligation.amount,
         barcode,
       };
@@ -107,7 +118,7 @@ export class DasReminderService {
           notificationId: notification.id,
           type: NotificationType.DAS_REMINDER,
           barcode,
-          dueDate: obligation.dueDate,
+          dueDate: dueDateLabel,
           amount: obligation.amount,
         },
       });

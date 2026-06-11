@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
-  FiscalObligationRef,
-  FiscalObligationStatus,
-  FiscalObligationType,
-} from '../entities/fiscal-obligation-ref.entity';
+  FiscalObligation,
+  ObligationStatus,
+  ObligationType,
+} from '../../fiscal/entities/fiscal-obligation.entity';
 import {
   NotificationCategory,
   NotificationStatus,
@@ -18,21 +18,53 @@ import { DasReminderService } from '../services/das-reminder.service';
 import { EmailService } from '../services/email.service';
 import { FcmService } from '../services/fcm.service';
 
+const mockObligation = (
+  overrides: Partial<FiscalObligation> = {},
+): FiscalObligation => ({
+  id: 'obligation-1',
+  companyId: 'user-1',
+  type: ObligationType.DAS,
+  referencePeriod: '2026-05',
+  dueDate: new Date('2026-06-14'),
+  amount: '75.90',
+  status: ObligationStatus.PENDING,
+  paidAt: null,
+  barcode: '85890000000759012345678901234567890123456789',
+  createdAt: new Date('2026-05-01'),
+  updatedAt: new Date('2026-05-01'),
+  ...overrides,
+});
+
 describe('DasReminderService', () => {
   let service: DasReminderService;
-  let obligationRepository: jest.Mocked<Repository<FiscalObligationRef>>;
+  let obligationRepository: jest.Mocked<Repository<FiscalObligation>>;
   let userRepository: jest.Mocked<Repository<UserRef>>;
   let notificationsService: jest.Mocked<NotificationsService>;
   let fcmService: jest.Mocked<FcmService>;
   let emailService: jest.Mocked<EmailService>;
+  let obligationQueryBuilder: {
+    where: jest.Mock;
+    andWhere: jest.Mock;
+    getMany: jest.Mock;
+  };
 
   beforeEach(async () => {
+    obligationQueryBuilder = {
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      getMany: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DasReminderService,
         {
-          provide: getRepositoryToken(FiscalObligationRef),
-          useValue: { find: jest.fn() },
+          provide: getRepositoryToken(FiscalObligation),
+          useValue: {
+            createQueryBuilder: jest
+              .fn()
+              .mockReturnValue(obligationQueryBuilder),
+          },
         },
         {
           provide: getRepositoryToken(UserRef),
@@ -57,7 +89,7 @@ describe('DasReminderService', () => {
     }).compile();
 
     service = module.get(DasReminderService);
-    obligationRepository = module.get(getRepositoryToken(FiscalObligationRef));
+    obligationRepository = module.get(getRepositoryToken(FiscalObligation));
     userRepository = module.get(getRepositoryToken(UserRef));
     notificationsService = module.get(NotificationsService);
     fcmService = module.get(FcmService);
@@ -71,18 +103,9 @@ describe('DasReminderService', () => {
 
   it('creates notifications and sends push with barcode', async () => {
     const userId = 'user-1';
-    const obligation: FiscalObligationRef = {
-      id: 'obligation-1',
-      companyId: userId,
-      type: FiscalObligationType.DAS,
-      referencePeriod: '2026-05',
-      dueDate: '2026-06-14',
-      amount: '75.90',
-      status: FiscalObligationStatus.PENDING,
-      barcode: '85890000000759012345678901234567890123456789',
-    };
+    const obligation = mockObligation({ companyId: userId });
 
-    obligationRepository.find.mockResolvedValue([obligation]);
+    obligationQueryBuilder.getMany.mockResolvedValue([obligation]);
     userRepository.findOne.mockResolvedValue({
       id: userId,
       email: 'user@test.com',
@@ -125,6 +148,9 @@ describe('DasReminderService', () => {
       emailsSent: 0,
     });
 
+    expect(obligationRepository.createQueryBuilder).toHaveBeenCalledWith(
+      'obligation',
+    );
     expect(notificationsService.create).toHaveBeenCalledWith(
       expect.objectContaining({
         metadata: expect.objectContaining({
@@ -145,18 +171,9 @@ describe('DasReminderService', () => {
 
   it('falls back to email when push fails', async () => {
     const userId = 'user-1';
-    const obligation: FiscalObligationRef = {
-      id: 'obligation-1',
-      companyId: userId,
-      type: FiscalObligationType.DAS,
-      referencePeriod: '2026-05',
-      dueDate: '2026-06-14',
-      amount: '75.90',
-      status: FiscalObligationStatus.PENDING,
-      barcode: '85890000000759012345678901234567890123456789',
-    };
+    const obligation = mockObligation({ companyId: userId });
 
-    obligationRepository.find.mockResolvedValue([obligation]);
+    obligationQueryBuilder.getMany.mockResolvedValue([obligation]);
     userRepository.findOne.mockResolvedValue({
       id: userId,
       email: 'user@test.com',

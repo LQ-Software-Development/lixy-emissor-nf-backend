@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { buildTypeOrmOptions } from './database/typeorm.config';
 import { HealthModule } from './health/health.module';
 import { ClientsModule } from './modules/clients/clients.module';
+import { FiscalModule } from './modules/fiscal/fiscal.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
@@ -22,6 +23,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     }),
     HealthModule,
     ClientsModule,
+    FiscalModule,
     NotificationsModule,
   ],
   controllers: [AppController],
