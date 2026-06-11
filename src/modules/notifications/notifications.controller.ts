@@ -56,6 +56,9 @@ export class NotificationsController {
 
   @Patch(':id/read')
   @ApiOperation({ summary: 'Mark notification as read' })
+  @ApiResponse({ status: 200, description: 'Notification marked as read' })
+  @ApiResponse({ status: 401, description: 'Missing X-User-ID header' })
+  @ApiResponse({ status: 404, description: 'Notification not found' })
   markAsRead(
     @Headers('x-user-id') userIdHeader: string,
     @Param('id', ParseUUIDPipe) id: string,
@@ -66,6 +69,8 @@ export class NotificationsController {
 
   @Post('register-push')
   @ApiOperation({ summary: 'Register FCM push token for the user' })
+  @ApiResponse({ status: 201, description: 'Push token registered' })
+  @ApiResponse({ status: 401, description: 'Missing X-User-ID header' })
   registerPush(
     @Headers('x-user-id') userIdHeader: string,
     @Body() dto: RegisterPushTokenDto,
