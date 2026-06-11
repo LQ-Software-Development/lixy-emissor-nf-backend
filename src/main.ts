@@ -12,7 +12,13 @@ async function bootstrap(): Promise<void> {
     origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Company-ID', 'Accept'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Company-ID',
+      'X-User-ID',
+      'Accept',
+    ],
   });
 
   app.useGlobalPipes(
@@ -37,6 +43,7 @@ async function bootstrap(): Promise<void> {
       'X-Company-ID',
     )
     .addBearerAuth()
+    .addTag('Auth', 'MEI registration, login and token refresh')
     .addTag('Health', 'Service and database health checks')
     .addTag('Clients', 'Client management (PF/PJ)')
     .addTag('Fiscal', 'Fiscal dashboard and obligations (DAS/DASN)')
