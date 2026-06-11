@@ -26,6 +26,12 @@ export class InvoiceEntity {
   @Column({ nullable: true })
   number!: string | null;
 
+  @Column({ name: 'access_key', type: 'varchar', length: 44, nullable: true })
+  accessKey!: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  description!: string | null;
+
   @Column({ type: 'enum', enum: InvoiceStatus, default: InvoiceStatus.DRAFT })
   status!: InvoiceStatus;
 
@@ -40,6 +46,9 @@ export class InvoiceEntity {
 
   @Column({ name: 'issued_at', type: 'timestamptz', nullable: true })
   issuedAt!: Date | null;
+
+  @Column({ name: 'cancelled_at', type: 'timestamptz', nullable: true })
+  cancelledAt!: Date | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;

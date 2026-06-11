@@ -1,61 +1,81 @@
 # lixy-emissor-nf-backend
 
-Backend API for Emissor NF MEI — NestJS 11, TypeORM, PostgreSQL.
+Backend API for **Emissor NF MEI** — NestJS 11 + TypeORM 1 + PostgreSQL 16.
 
 ## Stack
 
-- NestJS 11
-- @nestjs/typeorm 11
-- TypeORM 0.3
-- PostgreSQL 16
-- Swagger at `/docs`
+- NestJS 11 (TypeScript strict mode)
+- TypeORM 1.x + PostgreSQL 16
+- JWT auth (register / login / refresh)
+- Swagger (`/docs`)
+- Health check (`/health`)
+- GitHub Actions CI (lint, typecheck, test, build)
 
-## Quick start
+## Módulos
+
+| Módulo | Rota | Descrição |
+| --- | --- | --- |
+| `auth` | `POST /api/auth/register`, `login`, `refresh` | Autenticação JWT |
+| `nfe` | `GET /api/nfe/invoices` | Emissão de notas fiscais |
+| `fiscal` | `GET /api/fiscal/obligations` | Obrigações fiscais (DAS/DASN) |
+| `clients` | `GET /api/clients` | Cadastro de clientes |
+| `notifications` | `GET /api/notifications` | Notificações in-app |
+
+Rotas de domínio (exceto auth/health) exigem header `X-Company-ID` (tenant). Notificações usam `X-User-ID`.
+
+## Setup local
 
 ```bash
-cp .env.example .env
 npm install
-npm run start:dev
+cp .env.example .env
 ```
 
-Default port: **3009** (`API_PORT`).
-
-Create the database locally (with Docker infra from the Lixy meta-repo):
+Crie o banco no Postgres local:
 
 ```bash
 docker exec postgres psql -U user -d app -c "CREATE DATABASE emissor_nf_db;"
 ```
 
-## Scripts
-
-| Script | Description |
-| --- | --- |
-| `npm run start:dev` | Dev server with watch |
-| `npm run build` | Production build |
-| `npm run test` | Unit tests |
-| `npm run test:e2e` | E2E tests |
-| `npm run migration:generate` | Generate migration |
-| `npm run migration:run` | Run migrations |
-
-## Environment
-
-See `.env.example`:
-
-- `DATABASE_URL` — PostgreSQL connection string (required)
-- `API_PORT` — HTTP port (default `3009`)
-- `TYPEORM_SYNCHRONIZE` — `true` for local dev schema sync (default `false` in production)
-- `TYPEORM_MIGRATIONS_RUN` — run pending migrations on boot
-- `JWT_SECRET` — reserved for upcoming auth integration
-
-## Docker
+Ou use o compose do projeto:
 
 ```bash
-docker compose up --build
+docker compose up -d postgres
 ```
 
-API: `http://localhost:3009` — Postgres exposed on host port `5433`.
+## Desenvolvimento
 
-## Health
+```bash
+npm run start:dev
+```
 
-- `GET /` — service metadata
-- `GET /health` — database connectivity check
+- API: `http://localhost:3009/api`
+- Swagger: `http://localhost:3009/docs`
+- Health: `http://localhost:3009/health`
+
+`TYPEORM_SYNCHRONIZE=true` no `.env` habilita auto-sync de schema em dev.
+
+## Migrations
+
+```bash
+npm run migration:generate -- src/database/migrations/<Name>
+npm run migration:run
+npm run migration:revert
+```
+
+## Testes e qualidade
+
+```bash
+npm run lint
+npm run typecheck
+npm run test
+npm run test:e2e
+npm run build
+```
+
+## Entidades principais
+
+- **User** — CNPJ, email, senha, campos Stripe (`stripe_customer_id`, `stripe_subscription_id`, `trial_ends_at`, `subscription_status`)
+- **Client** — PF/PJ com endereço e documento validado
+- **Invoice** — NF-e por organização (status, chave de acesso, valores)
+- **FiscalObligation** — DAS/DASN por período
+- **Notification** — alertas por usuário (trial, fiscal, sistema)

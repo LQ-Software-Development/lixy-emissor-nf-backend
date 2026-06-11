@@ -44,6 +44,12 @@ export class FiscalObligationEntity {
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   amount!: string;
 
+  @Column({ name: 'paid_at', type: 'timestamptz', nullable: true })
+  paidAt!: Date | null;
+
+  @Column({ name: 'payment_reference', type: 'varchar', nullable: true })
+  paymentReference!: string | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 

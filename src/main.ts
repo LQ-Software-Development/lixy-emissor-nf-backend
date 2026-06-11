@@ -12,7 +12,13 @@ async function bootstrap(): Promise<void> {
     origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Company-ID', 'Accept'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Company-ID',
+      'X-User-ID',
+      'Accept',
+    ],
   });
 
   app.useGlobalPipes(
@@ -38,9 +44,11 @@ async function bootstrap(): Promise<void> {
     )
     .addBearerAuth()
     .addTag('Health', 'Service and database health checks')
+    .addTag('Auth', 'Registro, login e refresh JWT')
     .addTag('NFe', 'Notas fiscais eletrônicas')
     .addTag('Fiscal', 'Obrigações fiscais MEI (DAS/DASN)')
     .addTag('Clients', 'Client management (PF/PJ)')
+    .addTag('Notifications', 'Notificações in-app do usuário')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
