@@ -6,16 +6,13 @@ import { AppModule } from './app.module';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
+  app.setGlobalPrefix('api');
+
   app.enableCors({
     origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'X-Company-ID',
-      'Accept',
-    ],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Company-ID', 'Accept'],
   });
 
   app.useGlobalPipes(
@@ -41,6 +38,7 @@ async function bootstrap(): Promise<void> {
     )
     .addBearerAuth()
     .addTag('Health', 'Service and database health checks')
+    .addTag('Clients', 'Client management (PF/PJ)')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

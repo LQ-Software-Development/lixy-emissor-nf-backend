@@ -37,14 +37,11 @@ describe('AppController (e2e)', () => {
   });
 
   it('GET / returns service status', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect({
-        status: 'running',
-        service: 'lixy-emissor-nf-backend',
-        version: '0.0.1',
-      });
+    return request(app.getHttpServer()).get('/').expect(200).expect({
+      status: 'running',
+      service: 'lixy-emissor-nf-backend',
+      version: '0.0.1',
+    });
   });
 
   it('GET /health returns health payload', () => {
