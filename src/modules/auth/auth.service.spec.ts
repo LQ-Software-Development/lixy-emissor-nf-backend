@@ -22,7 +22,7 @@ describe('AuthService', () => {
     id: 'user-1',
     cnpj: '11444777000161',
     email: 'contato@mei.com.br',
-    name: 'MEI Teste',
+    razaoSocial: 'MEI Teste LTDA',
     passwordHash: 'hashed-password',
     refreshTokenHash: 'hashed-refresh',
     createdAt: new Date(),
@@ -86,32 +86,49 @@ describe('AuthService', () => {
         .mockResolvedValueOnce('refresh-token');
 
       const result = await service.register({
-        cnpj: VALID_CNPJ,
         email: 'contato@mei.com.br',
-        name: 'MEI Teste',
         password: 'SenhaSegura123!',
+        cnpj: VALID_CNPJ,
+        razaoSocial: 'MEI Teste LTDA',
       });
 
       expect(usersRepository.findOne).toHaveBeenCalledWith({
         where: { cnpj: '11444777000161' },
       });
-      expect(result.user.cnpj).toBe('11444777000161');
-      expect(result.tokens).toEqual({
-        accessToken: 'access-token',
-        refreshToken: 'refresh-token',
-        expiresIn: 900,
+      expect(usersRepository.findOne).toHaveBeenCalledWith({
+        where: { email: 'contato@mei.com.br' },
       });
+      expect(result.user.cnpj).toBe('11444777000161');
+      expect(result.accessToken).toBe('access-token');
+      expect(result.refreshToken).toBe('refresh-token');
     });
 
     it('throws when CNPJ already exists', async () => {
-      usersRepository.findOne.mockResolvedValue(baseUser);
+      usersRepository.findOne
+        .mockResolvedValueOnce(baseUser)
+        .mockResolvedValueOnce(null);
 
       await expect(
         service.register({
-          cnpj: VALID_CNPJ,
           email: 'outro@mei.com.br',
-          name: 'Outro MEI',
           password: 'SenhaSegura123!',
+          cnpj: VALID_CNPJ,
+          razaoSocial: 'Outro MEI',
+        }),
+      ).rejects.toBeInstanceOf(ConflictException);
+    });
+
+    it('throws when email already exists', async () => {
+      usersRepository.findOne
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(baseUser);
+
+      await expect(
+        service.register({
+          email: 'contato@mei.com.br',
+          password: 'SenhaSegura123!',
+          cnpj: VALID_CNPJ,
+          razaoSocial: 'Outro MEI',
         }),
       ).rejects.toBeInstanceOf(ConflictException);
     });
@@ -128,11 +145,11 @@ describe('AuthService', () => {
         .mockResolvedValueOnce('refresh-token');
 
       const result = await service.login({
-        cnpj: VALID_CNPJ,
+        email: 'contato@mei.com.br',
         password: 'SenhaSegura123!',
       });
 
-      expect(result.tokens.accessToken).toBe('access-token');
+      expect(result.accessToken).toBe('access-token');
       expect(result.user.id).toBe('user-1');
     });
 
@@ -141,7 +158,7 @@ describe('AuthService', () => {
 
       await expect(
         service.login({
-          cnpj: VALID_CNPJ,
+          email: 'contato@mei.com.br',
           password: 'SenhaSegura123!',
         }),
       ).rejects.toBeInstanceOf(UnauthorizedException);
@@ -152,7 +169,7 @@ describe('AuthService', () => {
 
       await expect(
         service.login({
-          cnpj: VALID_CNPJ,
+          email: 'contato@mei.com.br',
           password: 'wrong-password',
         }),
       ).rejects.toBeInstanceOf(UnauthorizedException);
@@ -191,10 +208,10 @@ describe('AuthService', () => {
 
       await expect(
         serviceWithoutSecret.register({
-          cnpj: VALID_CNPJ,
           email: 'contato@mei.com.br',
-          name: 'MEI Teste',
           password: 'SenhaSegura123!',
+          cnpj: VALID_CNPJ,
+          razaoSocial: 'MEI Teste LTDA',
         }),
       ).rejects.toThrow('JWT_SECRET is required');
     });
@@ -219,7 +236,6 @@ describe('AuthService', () => {
       expect(result).toEqual({
         accessToken: 'new-access-token',
         refreshToken: 'new-refresh-token',
-        expiresIn: 900,
       });
     });
 

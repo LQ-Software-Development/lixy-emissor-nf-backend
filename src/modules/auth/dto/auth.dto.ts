@@ -8,29 +8,29 @@ import {
 import { IsCnpj } from '../validators/is-cnpj.validator';
 
 export class RegisterDto {
-  @ApiProperty({ example: '12.345.678/0001-95' })
-  @IsCnpj()
-  cnpj!: string;
-
   @ApiProperty({ example: 'contato@mei.com.br' })
   @IsEmail()
   email!: string;
-
-  @ApiProperty({ example: 'Minha Empresa MEI' })
-  @IsString()
-  @IsNotEmpty()
-  name!: string;
 
   @ApiProperty({ example: 'SenhaSegura123!', minLength: 8 })
   @IsString()
   @MinLength(8)
   password!: string;
-}
 
-export class LoginDto {
   @ApiProperty({ example: '12.345.678/0001-95' })
   @IsCnpj()
   cnpj!: string;
+
+  @ApiProperty({ example: 'Minha Empresa MEI LTDA' })
+  @IsString()
+  @IsNotEmpty()
+  razaoSocial!: string;
+}
+
+export class LoginDto {
+  @ApiProperty({ example: 'contato@mei.com.br' })
+  @IsEmail()
+  email!: string;
 
   @ApiProperty({ example: 'SenhaSegura123!' })
   @IsString()
@@ -51,9 +51,6 @@ export class AuthTokensDto {
 
   @ApiProperty()
   refreshToken!: string;
-
-  @ApiProperty({ example: 900 })
-  expiresIn!: number;
 }
 
 export class AuthUserDto {
@@ -67,13 +64,16 @@ export class AuthUserDto {
   email!: string;
 
   @ApiProperty()
-  name!: string;
+  razaoSocial!: string;
 }
 
 export class AuthResponseDto {
   @ApiProperty({ type: AuthUserDto })
   user!: AuthUserDto;
 
-  @ApiProperty({ type: AuthTokensDto })
-  tokens!: AuthTokensDto;
+  @ApiProperty()
+  accessToken!: string;
+
+  @ApiProperty()
+  refreshToken!: string;
 }

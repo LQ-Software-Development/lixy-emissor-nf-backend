@@ -39,17 +39,26 @@ export class AuthService {
 
   async register(dto: RegisterDto): Promise<AuthResponseDto> {
     const cnpj = normalizeCnpj(dto.cnpj);
-    const existing = await this.usersRepository.findOne({ where: { cnpj } });
+    const email = dto.email.toLowerCase();
 
-    if (existing) {
+    const [existingCnpj, existingEmail] = await Promise.all([
+      this.usersRepository.findOne({ where: { cnpj } }),
+      this.usersRepository.findOne({ where: { email } }),
+    ]);
+
+    if (existingCnpj) {
       throw new ConflictException('CNPJ já cadastrado');
+    }
+
+    if (existingEmail) {
+      throw new ConflictException('Email já cadastrado');
     }
 
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
     const user = this.usersRepository.create({
       cnpj,
-      email: dto.email.toLowerCase(),
-      name: dto.name,
+      email,
+      razaoSocial: dto.razaoSocial,
       passwordHash,
       refreshTokenHash: null,
     });
@@ -61,8 +70,8 @@ export class AuthService {
   }
 
   async login(dto: LoginDto): Promise<AuthResponseDto> {
-    const cnpj = normalizeCnpj(dto.cnpj);
-    const user = await this.usersRepository.findOne({ where: { cnpj } });
+    const email = dto.email.toLowerCase();
+    const user = await this.usersRepository.findOne({ where: { email } });
 
     if (!user) {
       throw new UnauthorizedException('Credenciais inválidas');
@@ -115,10 +124,14 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token inválido');
     }
 
-    return this.issueTokens(user);
+    const tokens = await this.issueTokens(user);
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    };
   }
 
-  private async issueTokens(user: User): Promise<AuthTokensDto> {
+  private async issueTokens(user: User): Promise<AuthTokensDto & { expiresIn: number }> {
     const accessSecret = this.getAccessSecret();
     const refreshSecret = this.getRefreshSecret();
 
@@ -155,15 +168,19 @@ export class AuthService {
     };
   }
 
-  private toAuthResponse(user: User, tokens: AuthTokensDto): AuthResponseDto {
+  private toAuthResponse(
+    user: User,
+    tokens: AuthTokensDto,
+  ): AuthResponseDto {
     return {
       user: {
         id: user.id,
         cnpj: user.cnpj,
         email: user.email,
-        name: user.name,
+        razaoSocial: user.razaoSocial,
       },
-      tokens,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
     };
   }
 

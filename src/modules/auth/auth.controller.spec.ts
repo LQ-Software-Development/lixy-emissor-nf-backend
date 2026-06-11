@@ -27,38 +27,50 @@ describe('AuthController', () => {
 
   it('delegates register to AuthService', async () => {
     const payload = {
-      user: { id: '1', cnpj: '11444777000161', email: 'a@b.com', name: 'MEI' },
-      tokens: { accessToken: 'a', refreshToken: 'r', expiresIn: 900 },
+      user: {
+        id: '1',
+        cnpj: '11444777000161',
+        email: 'a@b.com',
+        razaoSocial: 'MEI LTDA',
+      },
+      accessToken: 'a',
+      refreshToken: 'r',
     };
     authService.register.mockResolvedValue(payload);
 
     await expect(
       controller.register({
-        cnpj: '11.444.777/0001-61',
         email: 'a@b.com',
-        name: 'MEI',
         password: 'SenhaSegura123!',
+        cnpj: '11.444.777/0001-61',
+        razaoSocial: 'MEI LTDA',
       }),
     ).resolves.toEqual(payload);
   });
 
   it('delegates login to AuthService', async () => {
     const payload = {
-      user: { id: '1', cnpj: '11444777000161', email: 'a@b.com', name: 'MEI' },
-      tokens: { accessToken: 'a', refreshToken: 'r', expiresIn: 900 },
+      user: {
+        id: '1',
+        cnpj: '11444777000161',
+        email: 'a@b.com',
+        razaoSocial: 'MEI LTDA',
+      },
+      accessToken: 'a',
+      refreshToken: 'r',
     };
     authService.login.mockResolvedValue(payload);
 
     await expect(
       controller.login({
-        cnpj: '11.444.777/0001-61',
+        email: 'a@b.com',
         password: 'SenhaSegura123!',
       }),
     ).resolves.toEqual(payload);
   });
 
   it('delegates refresh to AuthService', async () => {
-    const tokens = { accessToken: 'a', refreshToken: 'r', expiresIn: 900 };
+    const tokens = { accessToken: 'a', refreshToken: 'r' };
     authService.refresh.mockResolvedValue(tokens);
 
     await expect(

@@ -14,11 +14,11 @@ export class User {
   @Column({ unique: true, length: 14 })
   cnpj!: string;
 
-  @Column()
+  @Column({ unique: true })
   email!: string;
 
-  @Column()
-  name!: string;
+  @Column({ name: 'razao_social' })
+  razaoSocial!: string;
 
   @Column({ name: 'password_hash' })
   passwordHash!: string;
