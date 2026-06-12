@@ -58,8 +58,8 @@ Após `npm install`, os hooks são instalados automaticamente via `prepare`:
 
 | Hook | Comando | Quando |
 | --- | --- | --- |
-| `pre-commit` | `lint-staged` | ESLint + Prettier nos arquivos staged |
-| `pre-push` | `npm run ci:local` | Suite completa antes do push |
+| `pre-commit` | `npm run lint && npm run typecheck` | ESLint + verificação TypeScript |
+| `pre-push` | `npm run test -- --ci --coverage=false` | Testes unitários antes do push |
 
 Para rodar a validação manualmente (equivalente ao CI do GitHub):
 

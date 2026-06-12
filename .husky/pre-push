@@ -1,1 +1,1 @@
-npm run ci:local
+npm run test -- --ci --coverage=false
