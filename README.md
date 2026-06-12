@@ -5,7 +5,7 @@ Backend API for Emissor NF MEI — NestJS 11, TypeORM 1, PostgreSQL.
 ## Stack
 
 - NestJS 11 (TypeScript strict mode)
-- TypeORM 1.x + PostgreSQL 16
+- TypeORM 1.x + PostgreSQL 16 (spec LQDA-664: "TypeORM 7" = major `1.0` no npm; não existe pacote `typeorm@7`)
 - Swagger at `/docs`
 - GitHub Actions CI (lint, typecheck, test, build, e2e)
 
@@ -13,10 +13,12 @@ Backend API for Emissor NF MEI — NestJS 11, TypeORM 1, PostgreSQL.
 
 | Módulo | Rota | Descrição |
 | --- | --- | --- |
+| `health` | `GET /health` | Health check e conectividade com PostgreSQL |
 | `auth` | `POST /api/auth/register`, `login`, `refresh` | Registro MEI por CNPJ, login JWT e refresh token |
-| `clients` | `GET /api/clients` | Cadastro de clientes (PF/PJ) |
-| `fiscal` | `GET /api/fiscal/*` | Dashboard, notas fiscais e obrigações DAS/DASN |
-| `notifications` | `GET /api/notifications` | Notificações in-app, push e lembretes DAS |
+| `clients` | `GET /api/clients` | Cadastro de clientes (PF/PJ) — CRUD, CPF/CNPJ, CEP |
+| `fiscal` | `GET /api/fiscal/*` | Dashboard e obrigações DAS/DASN |
+| `nfe` | `GET /api/nfe/invoices` | NF-e — CRUD, emissão, cancelamento e PDF |
+| `notifications` | `GET /api/notifications` | Notificações in-app, push (FCM) e lembretes DAS (Resend) |
 
 Rotas de domínio exigem JWT Bearer (`Authorization`) após login/registro.
 Auth standalone MEI (não integrado ao `non-saas-auth-service` da plataforma Lixy).

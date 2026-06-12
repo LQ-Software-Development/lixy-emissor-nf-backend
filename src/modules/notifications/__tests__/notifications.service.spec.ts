@@ -106,6 +106,31 @@ describe('NotificationsService', () => {
     });
   });
 
+  it('lists notifications with type and category filters', async () => {
+    const notification = mockNotification();
+    const queryBuilder = {
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      getManyAndCount: jest.fn().mockResolvedValue([[notification], 1]),
+    };
+
+    notificationsRepository.createQueryBuilder.mockReturnValue(
+      queryBuilder as never,
+    );
+
+    await service.findAll(notification.userId, {
+      page: 1,
+      limit: 10,
+      type: NotificationType.DAS_REMINDER,
+      category: NotificationCategory.DAS,
+    });
+
+    expect(queryBuilder.andWhere).toHaveBeenCalledTimes(3);
+  });
+
   it('marks notification as read', async () => {
     const notification = mockNotification();
     notificationsRepository.findOne.mockResolvedValue(notification);

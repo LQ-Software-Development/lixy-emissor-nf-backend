@@ -180,6 +180,37 @@ describe('DasReminderService', () => {
     );
   });
 
+  it('skips obligations without companyId', async () => {
+    obligationQueryBuilder.getMany.mockResolvedValue([
+      mockObligation({ companyId: null }),
+    ]);
+
+    const result = await service.processReminders(new Date('2026-06-11'));
+
+    expect(result).toEqual({
+      processed: 1,
+      notificationsCreated: 0,
+      pushSent: 0,
+      emailsSent: 0,
+    });
+    expect(notificationsService.create).not.toHaveBeenCalled();
+  });
+
+  it('skips obligations when user is not found', async () => {
+    obligationQueryBuilder.getMany.mockResolvedValue([mockObligation()]);
+    userRepository.findOne.mockResolvedValue(null);
+
+    const result = await service.processReminders(new Date('2026-06-11'));
+
+    expect(result).toEqual({
+      processed: 1,
+      notificationsCreated: 0,
+      pushSent: 0,
+      emailsSent: 0,
+    });
+    expect(notificationsService.create).not.toHaveBeenCalled();
+  });
+
   it('falls back to email when push fails', async () => {
     const userId = 'user-1';
     const obligation = mockObligation({ companyId: userId });

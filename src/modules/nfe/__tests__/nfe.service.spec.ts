@@ -108,8 +108,64 @@ describe('NfeService', () => {
     await expect(service.cancel(issued.id)).resolves.toEqual(cancelled);
   });
 
+  it('rejects cancelling a non-issued invoice', async () => {
+    repository.findOne.mockResolvedValue(
+      mockInvoice({ status: NfeInvoiceStatus.DRAFT }),
+    );
+
+    await expect(
+      service.cancel('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('lists invoices with optional filters', async () => {
+    const invoice = mockInvoice();
+    const queryBuilder = {
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      getManyAndCount: jest.fn().mockResolvedValue([[invoice], 1]),
+    };
+
+    repository.createQueryBuilder.mockReturnValue(queryBuilder as never);
+
+    const result = await service.findAll({
+      page: 1,
+      limit: 10,
+      status: NfeInvoiceStatus.DRAFT,
+      clientId: 'client-1',
+    });
+
+    expect(result).toEqual({
+      data: [invoice],
+      total: 1,
+      page: 1,
+      limit: 10,
+      totalPages: 1,
+    });
+    expect(queryBuilder.andWhere).toHaveBeenCalledTimes(2);
+  });
+
   it('generates a PDF buffer', async () => {
     repository.findOne.mockResolvedValue(mockInvoice());
+
+    const buffer = await service.generatePdf(
+      'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    );
+
+    expect(Buffer.isBuffer(buffer)).toBe(true);
+    expect(buffer.length).toBeGreaterThan(0);
+  });
+
+  it('generates a PDF with access key and issued date', async () => {
+    repository.findOne.mockResolvedValue(
+      mockInvoice({
+        status: NfeInvoiceStatus.ISSUED,
+        accessKey: '35260611234567890123456789012345678901234567',
+        issuedAt: new Date('2024-06-01'),
+      }),
+    );
 
     const buffer = await service.generatePdf(
       'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',

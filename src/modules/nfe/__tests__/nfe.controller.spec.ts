@@ -4,7 +4,7 @@ import { Invoice, NfeInvoiceStatus } from '../entities/invoice.entity';
 import { NfeController } from '../nfe.controller';
 import { NfeService } from '../nfe.service';
 
-const mockInvoice = (): Invoice => ({
+const mockInvoice = (overrides: Partial<Invoice> = {}): Invoice => ({
   id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   number: '000000001',
   series: '1',
@@ -15,6 +15,7 @@ const mockInvoice = (): Invoice => ({
   issuedAt: null,
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
+  ...overrides,
 });
 
 describe('NfeController', () => {
@@ -61,6 +62,43 @@ describe('NfeController', () => {
     service.findOne.mockResolvedValue(invoice);
 
     await expect(controller.findOne(invoice.id)).resolves.toEqual(invoice);
+  });
+
+  it('lists invoices', async () => {
+    const invoice = mockInvoice();
+    service.findAll.mockResolvedValue({
+      data: [invoice],
+      total: 1,
+      page: 1,
+      limit: 10,
+      totalPages: 1,
+    });
+
+    await expect(controller.findAll({ page: 1, limit: 10 })).resolves.toEqual({
+      data: [invoice],
+      total: 1,
+      page: 1,
+      limit: 10,
+      totalPages: 1,
+    });
+  });
+
+  it('issues an invoice', async () => {
+    const invoice = mockInvoice({ status: NfeInvoiceStatus.ISSUED });
+    service.issue.mockResolvedValue(invoice);
+
+    await expect(
+      controller.issue(invoice.id, {
+        accessKey: '35260611234567890123456789012345678901234567',
+      }),
+    ).resolves.toEqual(invoice);
+  });
+
+  it('cancels an invoice', async () => {
+    const invoice = mockInvoice({ status: NfeInvoiceStatus.CANCELLED });
+    service.cancel.mockResolvedValue(invoice);
+
+    await expect(controller.cancel(invoice.id)).resolves.toEqual(invoice);
   });
 
   it('streams a PDF', async () => {
