@@ -7,7 +7,7 @@ Backend API for Emissor NF MEI — NestJS 11, TypeORM 1, PostgreSQL.
 - NestJS 11 (TypeScript strict mode)
 - TypeORM 1.x + PostgreSQL 16
 - Swagger at `/docs`
-- GitHub Actions CI (lint, typecheck, test, build, e2e)
+- Husky git hooks + `ci:local` (lint, typecheck, test, build, e2e)
 
 ## Módulos
 
@@ -47,8 +47,18 @@ docker exec postgres psql -U user -d app -c "CREATE DATABASE emissor_nf_db;"
 | `npm run typecheck` | TypeScript check |
 | `npm run test` | Unit tests |
 | `npm run test:e2e` | E2E tests |
+| `npm run ci:local` | Full local CI (lint → typecheck → test → build → e2e) |
 | `npm run migration:generate` | Generate migration |
 | `npm run migration:run` | Run migrations |
+
+## Git hooks (Husky)
+
+| Hook | Command |
+| --- | --- |
+| `pre-commit` | `lint` → `typecheck` → `test` (unitários) |
+| `pre-push` | `npm run ci:local` (build + e2e) |
+
+Para rodar a validação completa manualmente: `npm run ci:local`.
 
 ## Environment
 
