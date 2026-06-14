@@ -55,8 +55,8 @@ docker exec postgres psql -U user -d app -c "CREATE DATABASE emissor_nf_db;"
 
 | Hook | Command |
 | --- | --- |
-| `pre-commit` | `lint-staged` (ESLint + Prettier nos arquivos staged) |
-| `pre-push` | `npm run ci:local` |
+| `pre-commit` | `lint` → `typecheck` → `test` (unitários) |
+| `pre-push` | `npm run ci:local` (build + e2e) |
 
 Para rodar a validação completa manualmente: `npm run ci:local`.
 
