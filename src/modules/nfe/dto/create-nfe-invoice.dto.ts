@@ -1,8 +1,7 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsNumberString,
-  IsOptional,
   IsString,
   IsUUID,
   Length,
@@ -10,31 +9,24 @@ import {
 } from 'class-validator';
 
 export class CreateNfeInvoiceDto {
-  @ApiProperty({ example: '000000001' })
+  @ApiProperty({ format: 'uuid' })
+  @IsUUID()
+  clientId!: string;
+
+  @ApiProperty({
+    example: 'Serviço de consultoria',
+    minLength: 1,
+    maxLength: 500,
+  })
   @IsString()
   @IsNotEmpty()
-  @Length(1, 9)
-  number!: string;
-
-  @ApiPropertyOptional({ example: '1' })
-  @IsOptional()
-  @IsString()
-  @Length(1, 3)
-  series?: string;
-
-  @ApiPropertyOptional({ format: 'uuid' })
-  @IsOptional()
-  @IsUUID()
-  clientId?: string;
+  @Length(1, 500)
+  description!: string;
 
   @ApiProperty({ example: '150.00' })
   @IsNumberString()
+  @Matches(/^(?!0+(\.0+)?$)\d+(\.\d{1,2})?$/, {
+    message: 'amount must be greater than 0',
+  })
   amount!: string;
-}
-
-export class IssueNfeInvoiceDto {
-  @ApiProperty({ example: '35260611234567890123456789012345678901234567' })
-  @IsString()
-  @Matches(/^\d{44}$/, { message: 'accessKey must contain 44 digits' })
-  accessKey!: string;
 }

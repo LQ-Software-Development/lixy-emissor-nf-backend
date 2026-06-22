@@ -26,6 +26,9 @@ export class Invoice {
   @Column({ type: 'uuid', nullable: true })
   clientId!: string | null;
 
+  @Column({ type: 'varchar', length: 500 })
+  description!: string;
+
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   amount!: string;
 
