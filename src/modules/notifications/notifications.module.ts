@@ -26,6 +26,6 @@ import { FcmService } from './services/fcm.service';
     DasReminderService,
     DasReminderJob,
   ],
-  exports: [NotificationsService, DasReminderService],
+  exports: [NotificationsService, DasReminderService, EmailService],
 })
 export class NotificationsModule {}
